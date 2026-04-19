@@ -70,7 +70,6 @@
     50% { opacity: 0.4; }
   }
 
-  /* Badge de usuario */
   .user-chip {
     display: inline-flex;
     align-items: center;
@@ -82,10 +81,7 @@
     font-size: 13px;
     cursor: pointer;
   }
-  .user-chip img {
-    width: 22px; height: 22px;
-    border-radius: 50%;
-  }
+  .user-chip img { width: 22px; height: 22px; border-radius: 50%; }
   .user-chip.admin { border-color: var(--accent); color: var(--accent); }
 
   .tabs {
@@ -155,8 +151,6 @@
     min-height: 40px;
   }
   .btn-icon:hover { background: var(--bg-hover); color: var(--text); }
-
-  /* Login button (cuando no hay sesión) */
   .btn-login {
     padding: 8px 14px;
     background: transparent;
@@ -276,8 +270,34 @@
   }
   .form-input:focus, .form-textarea:focus { outline: none; border-color: var(--accent); }
   .form-textarea { min-height: 200px; resize: vertical; line-height: 1.7; }
+  .form-textarea.mono {
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 14px;
+    line-height: 1.8;
+  }
   .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   .form-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; flex-wrap: wrap; }
+
+  /* Tabs dentro del modal de letra/acordes */
+  .view-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .view-tab {
+    padding: 8px 14px;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 14px;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    font-family: inherit;
+  }
+  .view-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
   .lyrics-content {
     white-space: pre-wrap;
     line-height: 1.9;
@@ -290,6 +310,112 @@
     border: 1px solid var(--border);
     -webkit-overflow-scrolling: touch;
   }
+  .lyrics-content.mono {
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 14px;
+    line-height: 1.8;
+    white-space: pre;
+    overflow-x: auto;
+  }
+
+  /* MODO PANTALLA COMPLETA PARA LETRAS */
+  .fullscreen-viewer {
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+    z-index: 200;
+    display: none;
+    flex-direction: column;
+  }
+  .fullscreen-viewer.active { display: flex; }
+  .fullscreen-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    gap: 10px;
+    flex-shrink: 0;
+  }
+  .fs-title-group { flex: 1; min-width: 0; }
+  .fs-title {
+    font-size: 15px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .fs-subtitle {
+    font-size: 12px;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .fs-controls { display: flex; gap: 4px; align-items: center; flex-shrink: 0; }
+  .fs-font-btn {
+    padding: 6px 10px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-family: inherit;
+    min-width: 36px;
+  }
+  .fs-font-btn:hover { background: var(--bg-hover); }
+  .fs-view-toggle {
+    display: flex;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .fs-view-toggle button {
+    padding: 6px 12px;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 13px;
+    font-family: inherit;
+  }
+  .fs-view-toggle button.active { background: var(--accent); color: #000; font-weight: 600; }
+  .fs-close {
+    padding: 8px 12px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    font-family: inherit;
+    min-height: 36px;
+  }
+  .fullscreen-content {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 24px 20px 60px;
+    white-space: pre-wrap;
+    line-height: 1.9;
+    font-size: 20px;
+  }
+  .fullscreen-content.mono {
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    line-height: 1.9;
+    white-space: pre;
+    overflow-x: auto;
+  }
+  .fullscreen-empty {
+    text-align: center;
+    color: var(--text-muted);
+    padding: 60px 20px;
+    font-style: italic;
+    font-size: 16px;
+  }
+
   .empty-state {
     text-align: center;
     padding: 60px 20px;
@@ -297,7 +423,6 @@
   }
   .empty-state-icon { font-size: 48px; margin-bottom: 12px; opacity: 0.5; }
 
-  /* Mensaje de configuración faltante */
   .config-warning {
     background: rgba(239,68,68,0.1);
     border: 1px solid var(--danger);
@@ -327,6 +452,7 @@
     .modal { padding: 16px; border-radius: 14px 14px 0 0; max-height: 95vh; }
     .modal-overlay { align-items: flex-end; padding: 0; }
     .lyrics-content { font-size: 17px; max-height: 60vh; }
+    .fullscreen-content { font-size: 19px; padding: 20px 16px 60px; }
   }
 </style>
 </head>
@@ -411,6 +537,10 @@
         <label class="form-label">Letra</label>
         <textarea class="form-textarea" name="lyrics" placeholder="Pega aquí la letra de la canción..."></textarea>
       </div>
+      <div class="form-group">
+        <label class="form-label">🎸 Acordes</label>
+        <textarea class="form-textarea mono" name="chords" placeholder="Ej:&#10;       Am            G&#10;Caminando por la calle...&#10;       F             E&#10;vi tus ojos otra vez..."></textarea>
+      </div>
       <div class="form-actions">
         <button type="button" class="btn btn-secondary" onclick="closeSongModal()">Cancelar</button>
         <button type="submit" class="btn btn-primary">💾 Guardar</button>
@@ -419,7 +549,7 @@
   </div>
 </div>
 
-<!-- Modal letra -->
+<!-- Modal letra/acordes -->
 <div class="modal-overlay" id="lyricsModal">
   <div class="modal">
     <div class="modal-header">
@@ -430,12 +560,40 @@
       <button class="btn-icon" onclick="closeLyricsModal()">✕</button>
     </div>
     <div id="lyricsNotes" style="margin-bottom: 12px; color: var(--accent); font-size: 14px;"></div>
+
+    <div class="view-tabs" id="viewTabs">
+      <button class="view-tab active" data-view="lyrics">📄 Letra</button>
+      <button class="view-tab" data-view="chords">🎸 Acordes</button>
+    </div>
+
     <div class="lyrics-content" id="lyricsContent"></div>
+
     <div class="form-actions">
       <button class="btn btn-secondary" onclick="closeLyricsModal()">Cerrar</button>
+      <button class="btn btn-secondary" onclick="openFullscreen()">⛶ Pantalla completa</button>
       <button class="btn btn-primary" id="lyricsPlayBtn">▶ Reproducir</button>
     </div>
   </div>
+</div>
+
+<!-- Vista pantalla completa -->
+<div class="fullscreen-viewer" id="fullscreenViewer">
+  <div class="fullscreen-header">
+    <div class="fs-title-group">
+      <div class="fs-title" id="fsTitle"></div>
+      <div class="fs-subtitle" id="fsSubtitle"></div>
+    </div>
+    <div class="fs-controls">
+      <div class="fs-view-toggle" id="fsViewToggle">
+        <button class="active" data-view="lyrics">📄</button>
+        <button data-view="chords">🎸</button>
+      </div>
+      <button class="fs-font-btn" onclick="changeFontSize(-2)" title="Reducir texto">A−</button>
+      <button class="fs-font-btn" onclick="changeFontSize(2)" title="Aumentar texto">A+</button>
+      <button class="fs-close" onclick="closeFullscreen()" title="Cerrar">✕</button>
+    </div>
+  </div>
+  <div class="fullscreen-content" id="fullscreenContent"></div>
 </div>
 
 <script type="module">
@@ -443,23 +601,17 @@
 // ⚠️  CONFIGURACIÓN — EDITA ESTAS DOS COSAS ANTES DE USAR ⚠️
 // =====================================================================
 
-// 1) Pega aquí el objeto de configuración que te da Firebase Console
 const firebaseConfig = {
-  apiKey: "AIzaSyDq-CcwBDbJ4LQh_1NmbiuYX2mTwsz3LWQ",
-  authDomain: "setlist-2026-40d44.firebaseapp.com",
-  projectId: "setlist-2026-40d44",
-  storageBucket: "setlist-2026-40d44.firebasestorage.app",
-  messagingSenderId: "826876843909",
-  appId: "1:826876843909:web:7235e92bdea98690f156ec"
+  apiKey: "TU_API_KEY_AQUI",
+  authDomain: "tu-proyecto.firebaseapp.com",
+  projectId: "tu-proyecto",
+  storageBucket: "tu-proyecto.appspot.com",
+  messagingSenderId: "123456789",
+  appId: "1:123456789:web:abc123"
 };
 
+const ADMIN_EMAIL = "tu-email@gmail.com";
 
-// 2) Pon aquí el email de Google con el que TÚ vas a iniciar sesión
-//    (solo este correo podrá editar)
-const ADMIN_EMAIL = "fran.delao@gmail.com";
-
-// =====================================================================
-// A partir de aquí no necesitas modificar nada
 // =====================================================================
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -472,7 +624,6 @@ import {
   onAuthStateChanged, signOut
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-// Detectar configuración sin llenar
 if (firebaseConfig.apiKey === "TU_API_KEY_AQUI") {
   document.getElementById('configWarning').style.display = 'block';
   document.getElementById('configWarning').innerHTML = `
@@ -492,14 +643,18 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
-// ===== Estado =====
+// Estado
 let songs = [];
 let isAdmin = false;
 let currentUser = null;
 let editingId = null;
 let currentFilter = 'all';
+let currentModalSong = null;
+let currentModalView = 'lyrics';
+let currentFsView = 'lyrics';
+let fsFontSize = 20;
+let wakeLock = null;
 
-// ===== Helpers =====
 const escapeHtml = (s) => String(s ?? '').replace(/[&<>"']/g, c =>
   ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
@@ -515,7 +670,7 @@ const formatDateFull = (d) => {
   return date.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 };
 
-// ===== Auth =====
+// Auth
 onAuthStateChanged(auth, (user) => {
   currentUser = user;
   isAdmin = user && user.email === ADMIN_EMAIL;
@@ -524,25 +679,19 @@ onAuthStateChanged(auth, (user) => {
 });
 
 window.login = async () => {
-  try {
-    await signInWithPopup(auth, provider);
-  } catch (err) {
-    alert('Error al iniciar sesión: ' + err.message);
-  }
+  try { await signInWithPopup(auth, provider); }
+  catch (err) { alert('Error al iniciar sesión: ' + err.message); }
 };
-
 window.logout = () => signOut(auth);
 
 function renderAuthArea() {
   const area = document.getElementById('authArea');
   const newBtn = document.getElementById('newSongBtn');
-
   if (!currentUser) {
     area.innerHTML = `<button class="btn-login" onclick="login()">Iniciar sesión</button>`;
     newBtn.style.display = 'none';
     return;
   }
-
   const photoHtml = currentUser.photoURL
     ? `<img src="${escapeHtml(currentUser.photoURL)}" alt="">`
     : `<span style="font-size:16px;padding:0 4px">👤</span>`;
@@ -557,9 +706,8 @@ function renderAuthArea() {
   newBtn.style.display = isAdmin ? '' : 'none';
 }
 
-// ===== Firestore - escucha en tiempo real =====
+// Firestore
 const songsQuery = query(collection(db, "songs"), orderBy("createdAt", "desc"));
-
 onSnapshot(songsQuery, (snap) => {
   songs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
   setSyncStatus('live', 'En vivo');
@@ -576,7 +724,6 @@ function setSyncStatus(state, text) {
   document.getElementById('syncText').textContent = text;
 }
 
-// ===== UI =====
 function updateSingers() {
   const singers = [...new Set(songs.map(s => s.singer).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'es'));
   const datalist = document.getElementById('singersList');
@@ -686,6 +833,7 @@ function renderCard(s) {
     <button class="btn-icon" onclick="editSong('${s.id}')" title="Editar">✏️</button>
     <button class="btn-icon" onclick="deleteSong('${s.id}')" title="Eliminar">🗑️</button>
   ` : '';
+  const hasContent = s.lyrics || s.chords;
   return `
     <div class="song-card">
       <div class="song-info">
@@ -699,13 +847,14 @@ function renderCard(s) {
         </div>
       </div>
       <div class="song-actions">
-        ${s.lyrics ? `<button class="btn btn-secondary" onclick="viewLyrics('${s.id}')">📄 Letra</button>` : ''}
+        ${hasContent ? `<button class="btn btn-secondary" onclick="viewLyrics('${s.id}')">📄 Letra${s.chords ? ' / Acordes' : ''}</button>` : ''}
         ${s.playUrl ? `<button class="btn btn-primary" onclick="playUrl('${escapeHtml(s.playUrl)}')">▶</button>` : ''}
         ${adminActions}
       </div>
     </div>`;
 }
 
+// ===== Modales de edición =====
 window.openSongModal = (song = null) => {
   if (!isAdmin) return;
   editingId = song ? song.id : null;
@@ -722,6 +871,7 @@ window.openSongModal = (song = null) => {
     form.playUrl.value = song.playUrl || '';
     form.notes.value = song.notes || '';
     form.lyrics.value = song.lyrics || '';
+    form.chords.value = song.chords || '';
   }
   document.getElementById('songModal').classList.add('active');
 };
@@ -744,6 +894,7 @@ window.saveSong = async (e) => {
     playUrl: form.playUrl.value.trim(),
     notes: form.notes.value.trim(),
     lyrics: form.lyrics.value,
+    chords: form.chords.value,
     updatedAt: serverTimestamp()
   };
   try {
@@ -767,24 +918,34 @@ window.deleteSong = async (id) => {
   if (!isAdmin) return;
   const song = songs.find(s => s.id === id);
   if (confirm(`¿Eliminar "${song.title}"?`)) {
-    try {
-      await deleteDoc(doc(db, "songs", id));
-    } catch (err) {
-      alert('Error al eliminar: ' + err.message);
-    }
+    try { await deleteDoc(doc(db, "songs", id)); }
+    catch (err) { alert('Error al eliminar: ' + err.message); }
   }
 };
 
+// ===== Visor letra/acordes =====
 window.viewLyrics = (id) => {
   const song = songs.find(s => s.id === id);
   if (!song) return;
+  currentModalSong = song;
+
   document.getElementById('lyricsTitle').textContent = song.title;
   const subtitleParts = [];
   if (song.artist) subtitleParts.push(song.artist);
   if (song.singer) subtitleParts.push(`🎙️ ${song.singer}`);
   document.getElementById('lyricsArtist').textContent = subtitleParts.join(' · ');
   document.getElementById('lyricsNotes').textContent = song.notes || '';
-  document.getElementById('lyricsContent').textContent = song.lyrics || 'Sin letra.';
+
+  // Elegir vista inicial: letra si hay, si no acordes
+  currentModalView = song.lyrics ? 'lyrics' : (song.chords ? 'chords' : 'lyrics');
+  updateViewTabs();
+
+  // Mostrar u ocultar tabs según qué tenga
+  const tabs = document.getElementById('viewTabs');
+  const hasLyrics = !!song.lyrics;
+  const hasChords = !!song.chords;
+  tabs.style.display = (hasLyrics && hasChords) ? 'flex' : 'none';
+
   const playBtn = document.getElementById('lyricsPlayBtn');
   if (song.playUrl) {
     playBtn.style.display = 'inline-flex';
@@ -795,13 +956,117 @@ window.viewLyrics = (id) => {
   document.getElementById('lyricsModal').classList.add('active');
 };
 
+function updateViewTabs() {
+  document.querySelectorAll('.view-tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.view === currentModalView);
+  });
+  const content = document.getElementById('lyricsContent');
+  if (currentModalView === 'chords') {
+    content.classList.add('mono');
+    content.textContent = currentModalSong.chords || 'Sin acordes.';
+  } else {
+    content.classList.remove('mono');
+    content.textContent = currentModalSong.lyrics || 'Sin letra.';
+  }
+}
+
+document.querySelectorAll('.view-tab').forEach(t => {
+  t.addEventListener('click', () => {
+    currentModalView = t.dataset.view;
+    updateViewTabs();
+  });
+});
+
 window.closeLyricsModal = () => {
   document.getElementById('lyricsModal').classList.remove('active');
 };
 
+// ===== MODO PANTALLA COMPLETA =====
+window.openFullscreen = async () => {
+  if (!currentModalSong) return;
+  const song = currentModalSong;
+  document.getElementById('fsTitle').textContent = song.title;
+  const subtitleParts = [];
+  if (song.artist) subtitleParts.push(song.artist);
+  if (song.singer) subtitleParts.push(`🎙️ ${song.singer}`);
+  if (song.notes) subtitleParts.push(song.notes);
+  document.getElementById('fsSubtitle').textContent = subtitleParts.join(' · ');
+
+  // Mostrar/ocultar toggle según disponibilidad
+  const toggle = document.getElementById('fsViewToggle');
+  const hasLyrics = !!song.lyrics;
+  const hasChords = !!song.chords;
+  toggle.style.display = (hasLyrics && hasChords) ? 'flex' : 'none';
+
+  currentFsView = currentModalView;
+  updateFsView();
+
+  document.getElementById('fullscreenViewer').classList.add('active');
+  document.body.style.overflow = 'hidden';
+
+  // Intentar mantener pantalla encendida (útil al usarlo en el toque)
+  if ('wakeLock' in navigator) {
+    try {
+      wakeLock = await navigator.wakeLock.request('screen');
+    } catch (e) { /* silencioso, algunos navegadores lo bloquean */ }
+  }
+};
+
+function updateFsView() {
+  const content = document.getElementById('fullscreenContent');
+  document.querySelectorAll('#fsViewToggle button').forEach(b => {
+    b.classList.toggle('active', b.dataset.view === currentFsView);
+  });
+  if (currentFsView === 'chords') {
+    content.classList.add('mono');
+    content.style.fontSize = (fsFontSize - 2) + 'px';
+    content.textContent = currentModalSong.chords || '';
+    if (!currentModalSong.chords) {
+      content.innerHTML = '<div class="fullscreen-empty">Esta canción no tiene acordes registrados.</div>';
+    }
+  } else {
+    content.classList.remove('mono');
+    content.style.fontSize = fsFontSize + 'px';
+    content.textContent = currentModalSong.lyrics || '';
+    if (!currentModalSong.lyrics) {
+      content.innerHTML = '<div class="fullscreen-empty">Esta canción no tiene letra registrada.</div>';
+    }
+  }
+}
+
+document.querySelectorAll('#fsViewToggle button').forEach(b => {
+  b.addEventListener('click', () => {
+    currentFsView = b.dataset.view;
+    updateFsView();
+  });
+});
+
+window.changeFontSize = (delta) => {
+  fsFontSize = Math.max(12, Math.min(48, fsFontSize + delta));
+  updateFsView();
+};
+
+window.closeFullscreen = async () => {
+  document.getElementById('fullscreenViewer').classList.remove('active');
+  document.body.style.overflow = '';
+  if (wakeLock) {
+    try { await wakeLock.release(); } catch(e) {}
+    wakeLock = null;
+  }
+};
+
+// Reanudar wake lock si la pestaña pierde y recupera foco
+document.addEventListener('visibilitychange', async () => {
+  if (document.visibilityState === 'visible' &&
+      document.getElementById('fullscreenViewer').classList.contains('active') &&
+      'wakeLock' in navigator && !wakeLock) {
+    try { wakeLock = await navigator.wakeLock.request('screen'); } catch(e) {}
+  }
+});
+
 window.playUrl = (url) => window.open(url, '_blank', 'noopener');
 
-// ===== Eventos UI =====
+// Eventos UI
 document.querySelectorAll('.tab').forEach(t => {
   t.addEventListener('click', () => {
     document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
@@ -818,10 +1083,15 @@ document.querySelectorAll('.modal-overlay').forEach(o => {
   o.addEventListener('click', e => { if (e.target === o) o.classList.remove('active'); });
 });
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') document.querySelectorAll('.modal-overlay').forEach(o => o.classList.remove('active'));
+  if (e.key === 'Escape') {
+    if (document.getElementById('fullscreenViewer').classList.contains('active')) {
+      window.closeFullscreen();
+    } else {
+      document.querySelectorAll('.modal-overlay').forEach(o => o.classList.remove('active'));
+    }
+  }
 });
 
-// Init UI
 renderAuthArea();
 </script>
 </body>
