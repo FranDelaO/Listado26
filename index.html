@@ -4,10 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
 <meta name="theme-color" content="#0f1115">
-<title>Setlist — Gestor de Canciones</title>
-  <!-- Favicon con emoji (funciona al instante, sin archivos) -->
-<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎶</text></svg>">
-
+<title>Setlist — Aniversario 2026</title>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
 <style>
   :root {
     --bg: #0f1115;
@@ -155,16 +153,29 @@
   }
   .btn-icon:hover { background: var(--bg-hover); color: var(--text); }
   .btn-login {
-    padding: 8px 14px;
+    padding: 6px 12px;
     background: transparent;
     color: var(--text-muted);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    font-size: 13px;
+    border: 1px solid transparent;
+    border-radius: 16px;
+    font-size: 11px;
     cursor: pointer;
     font-family: inherit;
+    opacity: 0.5;
+    transition: opacity 0.2s;
   }
-  .btn-login:hover { color: var(--text); border-color: var(--text-muted); }
+  .btn-login:hover { opacity: 1; color: var(--text-muted); border-color: var(--border); }
+
+  /* Footer discreto */
+  .app-footer {
+    margin-top: 60px;
+    padding: 20px 0;
+    text-align: center;
+    border-top: 1px solid var(--border);
+    opacity: 0.6;
+    transition: opacity 0.2s;
+  }
+  .app-footer:hover { opacity: 1; }
 
   /* Agrupación */
   .day-group { margin-bottom: 24px; }
@@ -213,6 +224,25 @@
     transition: border-color 0.15s;
   }
   .song-card:hover { border-color: var(--accent); }
+  .song-card.sortable-ghost { opacity: 0.3; background: var(--bg-hover); }
+  .song-card.sortable-chosen { border-color: var(--accent); box-shadow: 0 4px 12px rgba(245,158,11,0.2); }
+  .song-card.sortable-drag { opacity: 0.9; transform: rotate(1deg); }
+  .song-card.draggable { grid-template-columns: auto 1fr auto; cursor: default; }
+  .drag-handle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+    color: var(--text-muted);
+    cursor: grab;
+    font-size: 18px;
+    line-height: 1;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+  }
+  .drag-handle:active { cursor: grabbing; color: var(--accent); }
+  .drag-handle:hover { color: var(--text); }
   .song-info h3 { font-size: 16px; margin-bottom: 4px; font-weight: 600; }
   .song-artist { color: var(--text-muted); font-size: 13px; margin-bottom: 8px; }
   .song-meta { display: flex; gap: 6px; flex-wrap: wrap; font-size: 12px; }
@@ -464,14 +494,13 @@
   <header>
     <div class="logo">
       <span class="logo-icon">🎵</span>
-      <span>Setlist</span>
+      <span>Setlist — Aniversario 2026</span>
     </div>
     <div class="header-actions">
       <div class="sync-status loading" id="syncStatus">
         <span class="sync-dot"></span>
         <span id="syncText">Conectando...</span>
       </div>
-      <div id="authArea"></div>
     </div>
   </header>
 
@@ -493,6 +522,10 @@
   </div>
 
   <div id="songsList"></div>
+
+  <footer class="app-footer">
+    <div id="authArea"></div>
+  </footer>
 </div>
 
 <!-- Modal formulario -->
@@ -605,23 +638,22 @@
 // =====================================================================
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDq-CcwBDbJ4LQh_1NmbiuYX2mTwsz3LWQ",
-  authDomain: "setlist-2026-40d44.firebaseapp.com",
-  projectId: "setlist-2026-40d44",
-  storageBucket: "setlist-2026-40d44.firebasestorage.app",
-  messagingSenderId: "826876843909",
-  appId: "1:826876843909:web:7235e92bdea98690f156ec"
+  apiKey: "TU_API_KEY_AQUI",
+  authDomain: "tu-proyecto.firebaseapp.com",
+  projectId: "tu-proyecto",
+  storageBucket: "tu-proyecto.appspot.com",
+  messagingSenderId: "123456789",
+  appId: "1:123456789:web:abc123"
 };
 
-
-const ADMIN_EMAIL = "fran.delao@gmail.com";
+const ADMIN_EMAIL = "tu-email@gmail.com";
 
 // =====================================================================
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import {
   getFirestore, collection, onSnapshot, addDoc, updateDoc, deleteDoc,
-  doc, serverTimestamp, query, orderBy
+  doc, serverTimestamp, query, orderBy, writeBatch
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import {
   getAuth, signInWithPopup, GoogleAuthProvider,
@@ -658,6 +690,7 @@ let currentModalView = 'lyrics';
 let currentFsView = 'lyrics';
 let fsFontSize = 20;
 let wakeLock = null;
+let sortableInstances = [];
 
 const escapeHtml = (s) => String(s ?? '').replace(/[&<>"']/g, c =>
   ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -666,6 +699,13 @@ const formatDate = (d) => {
   if (!d) return '—';
   const date = new Date(d + 'T00:00:00');
   return date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
+};
+
+const formatDay = (d) => {
+  if (!d) return '—';
+  const date = new Date(d + 'T00:00:00');
+  const day = date.toLocaleDateString('es-ES', { weekday: 'long' });
+  return day.charAt(0).toUpperCase() + day.slice(1);
 };
 
 const formatDateFull = (d) => {
@@ -692,7 +732,7 @@ function renderAuthArea() {
   const area = document.getElementById('authArea');
   const newBtn = document.getElementById('newSongBtn');
   if (!currentUser) {
-    area.innerHTML = `<button class="btn-login" onclick="login()">Iniciar sesión</button>`;
+    area.innerHTML = `<button class="btn-login" onclick="login()">· admin ·</button>`;
     newBtn.style.display = 'none';
     return;
   }
@@ -710,10 +750,19 @@ function renderAuthArea() {
   newBtn.style.display = isAdmin ? '' : 'none';
 }
 
-// Firestore
-const songsQuery = query(collection(db, "songs"), orderBy("createdAt", "desc"));
+// Firestore - ordenamos en el cliente para poder usar "order" con fallback
+const songsQuery = query(collection(db, "songs"));
 onSnapshot(songsQuery, (snap) => {
   songs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  // Ordenar: primero por campo 'order' (si existe), luego por createdAt desc
+  songs.sort((a, b) => {
+    const oa = (a.order !== undefined && a.order !== null) ? a.order : Number.MAX_SAFE_INTEGER;
+    const ob = (b.order !== undefined && b.order !== null) ? b.order : Number.MAX_SAFE_INTEGER;
+    if (oa !== ob) return oa - ob;
+    const ca = a.createdAt?.seconds || 0;
+    const cb = b.createdAt?.seconds || 0;
+    return cb - ca;
+  });
   setSyncStatus('live', 'En vivo');
   updateSingers();
   renderSongs();
@@ -771,6 +820,9 @@ function renderSongs() {
     const sortedDates = Object.keys(groups).sort();
     const cls = currentFilter === 'rehearsal' ? 'rehearsal' : '';
     const icon = currentFilter === 'rehearsal' ? '🎹' : '🎤';
+    // El drag solo se activa en "por día de toque" (performance), no en ensayo
+    const canDrag = isAdmin && currentFilter === 'performance';
+    const gridCls = canDrag ? 'songs-grid sortable-grid' : 'songs-grid';
 
     let html = sortedDates.map(date => `
       <div class="day-group">
@@ -779,7 +831,7 @@ function renderSongs() {
           <span class="day-title">${formatDateFull(date)}</span>
           <span class="day-count">${groups[date].length} canción${groups[date].length !== 1 ? 'es' : ''}</span>
         </div>
-        <div class="songs-grid">${groups[date].map(renderCard).join('')}</div>
+        <div class="${gridCls}">${groups[date].map(s => renderCard(s, canDrag)).join('')}</div>
       </div>`).join('');
 
     if (noDate.length > 0) {
@@ -790,10 +842,11 @@ function renderSongs() {
             <span class="day-title">Sin fecha asignada</span>
             <span class="day-count">${noDate.length}</span>
           </div>
-          <div class="songs-grid">${noDate.map(renderCard).join('')}</div>
+          <div class="${gridCls}">${noDate.map(s => renderCard(s, canDrag)).join('')}</div>
         </div>`;
     }
     container.innerHTML = html || `<div class="empty-state"><div class="empty-state-icon">📅</div><p>No hay canciones con fechas asignadas.</p></div>`;
+    initSortable();
     return;
   }
 
@@ -829,24 +882,79 @@ function renderSongs() {
     return;
   }
 
-  container.innerHTML = `<div class="songs-grid">${filtered.map(renderCard).join('')}</div>`;
+  const canDragAll = isAdmin && currentFilter === 'all';
+  const gridCls = canDragAll ? 'songs-grid sortable-grid' : 'songs-grid';
+  container.innerHTML = `<div class="${gridCls}" id="sortableList">${filtered.map(s => renderCard(s, canDragAll)).join('')}</div>`;
+  initSortable();
 }
 
-function renderCard(s) {
+function initSortable() {
+  // Destruir instancias previas
+  sortableInstances.forEach(s => { try { s.destroy(); } catch(e) {} });
+  sortableInstances = [];
+  if (!isAdmin) return;
+  if (!window.Sortable) return;
+
+  const grids = document.querySelectorAll('.sortable-grid');
+  grids.forEach(list => {
+    const inst = window.Sortable.create(list, {
+      handle: '.drag-handle',
+      animation: 150,
+      delay: 200,                // toque prolongado en móvil
+      delayOnTouchOnly: true,
+      touchStartThreshold: 5,
+      ghostClass: 'sortable-ghost',
+      chosenClass: 'sortable-chosen',
+      dragClass: 'sortable-drag',
+      onEnd: async (evt) => {
+        if (evt.oldIndex === evt.newIndex) return;
+        await persistOrder();
+      }
+    });
+    sortableInstances.push(inst);
+  });
+}
+
+async function persistOrder() {
+  // Recorre TODOS los grids sortables en orden visual y reasigna órdenes globales.
+  // Así, un drag dentro de un día sólo afecta a las canciones de ese día,
+  // pero las demás mantienen su orden relativo.
+  const allIds = [];
+  document.querySelectorAll('.sortable-grid').forEach(grid => {
+    grid.querySelectorAll('.song-card').forEach(el => {
+      if (el.dataset.id) allIds.push(el.dataset.id);
+    });
+  });
+  if (allIds.length === 0) return;
+  try {
+    const batch = writeBatch(db);
+    allIds.forEach((id, i) => {
+      batch.update(doc(db, "songs", id), { order: (i + 1) * 1000 });
+    });
+    await batch.commit();
+  } catch (err) {
+    alert('Error al guardar el orden: ' + err.message);
+    console.error(err);
+  }
+}
+
+function renderCard(s, draggable = false) {
   const adminActions = isAdmin ? `
     <button class="btn-icon" onclick="editSong('${s.id}')" title="Editar">✏️</button>
     <button class="btn-icon" onclick="deleteSong('${s.id}')" title="Eliminar">🗑️</button>
   ` : '';
   const hasContent = s.lyrics || s.chords;
+  const handle = draggable ? `<div class="drag-handle" title="Arrastrar para reordenar">⋮⋮</div>` : '';
   return `
-    <div class="song-card">
+    <div class="song-card${draggable ? ' draggable' : ''}" data-id="${s.id}">
+      ${handle}
       <div class="song-info">
         <h3>${escapeHtml(s.title)}</h3>
         ${s.artist ? `<div class="song-artist">${escapeHtml(s.artist)}</div>` : ''}
         <div class="song-meta">
           ${s.singer ? `<span class="meta-badge singer">🎙️ ${escapeHtml(s.singer)}</span>` : ''}
-          ${s.performanceDate ? `<span class="meta-badge performance">🎤 ${formatDate(s.performanceDate)}</span>` : ''}
-          ${s.rehearsalDate ? `<span class="meta-badge rehearsal">🎹 ${formatDate(s.rehearsalDate)}</span>` : ''}
+          ${s.performanceDate ? `<span class="meta-badge performance">🎤 ${formatDay(s.performanceDate)}</span>` : ''}
+          ${s.rehearsalDate ? `<span class="meta-badge rehearsal">🎹 ${formatDay(s.rehearsalDate)}</span>` : ''}
           ${s.notes ? `<span class="meta-badge">🎵 ${escapeHtml(s.notes)}</span>` : ''}
         </div>
       </div>
@@ -905,7 +1013,16 @@ window.saveSong = async (e) => {
     if (editingId) {
       await updateDoc(doc(db, "songs", editingId), data);
     } else {
-      await addDoc(collection(db, "songs"), { ...data, createdAt: serverTimestamp() });
+      // Nueva canción: asignar order al final
+      const maxOrder = songs.reduce((m, s) => {
+        const o = (s.order !== undefined && s.order !== null) ? s.order : 0;
+        return o > m ? o : m;
+      }, 0);
+      await addDoc(collection(db, "songs"), {
+        ...data,
+        order: maxOrder + 1000,
+        createdAt: serverTimestamp()
+      });
     }
     window.closeSongModal();
   } catch (err) {
